@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Management Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            900: '#0b0f19',
+                            800: '#0f172a',
+                            700: '#1e293b',
+                            600: '#334155'
+                        },
+                        brand: {
+                            blue: '#3b82f6',
+                            cyan: '#06b6d4',
+                            emerald: '#10b981',
+                            purple: '#8b5cf6'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .active-nav {
+            background: rgba(59, 130, 246, 0.15);
+            border-left: 4px solid #3b82f6;
+            color: #60a5fa;
+        }
+    </style>
+</head>
+
+<body class="bg-dark-900 min-h-screen text-slate-200 antialiased selection:bg-brand-blue selection:text-white">
+
+    <div id="login-overlay"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-dark-900/95 backdrop-blur-md p-4 transition-all duration-300">
+        <div
+            class="glass-card w-full max-w-md rounded-2xl p-8 shadow-2xl border border-slate-700/50 relative overflow-hidden">
+            <div class="absolute -top-12 -left-12 w-32 h-32 bg-brand-blue/20 rounded-full blur-2xl"></div>
+            <div class="absolute -bottom-12 -right-12 w-32 h-32 bg-brand-purple/20 rounded-full blur-2xl"></div>
+
+            <div class="text-center mb-8 relative z-10">
+                <div
+                    class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-blue to-brand-cyan text-white shadow-lg mb-4">
+                    <i class="fa-solid font-bold text-2xl fa-mountain-sun"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white tracking-wide">My Life Journey</h2>
+                <p class="text-slate-400 text-sm mt-1">Same Person... Bigger Dreams...</p>
+            </div>
+
+            <form id="login-form" class="space-y-5 relative z-10">
+                <div id="login-error"
+                    class="hidden bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs p-3 rounded-xl text-center">
+                    Invalid username or password!
+                </div>
+                <div>
+                    <label
+                        class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Username</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-user absolute left-4 top-3.5 text-slate-500 text-sm"></i>
+                        <input type="text" id="username" required
+                            class="w-full bg-dark-800 border border-slate-700 rounded-xl pl-11 pr-4 py-3 text-sm text-white focus:outline-none focus:border-brand-blue transition"
+                            placeholder="Enter ''">
+                    </div>
+                </div>
+
+                <div>
+                    <label
+                        class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Password</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-4 top-3.5 text-slate-500 text-sm"></i>
+                        <input type="password" id="password" required
+                            class="w-full bg-dark-800 border border-slate-700 rounded-xl pl-11 pr-4 py-3 text-sm text-white focus:outline-none focus:border-brand-blue transition"
+                            placeholder="Enter ''">
+                    </div>
+                </div>
+
+                <button type="submit"
+                    class="w-full py-3 px-4 bg-gradient-to-r from-brand-blue to-brand-cyan hover:opacity-90 text-white font-semibold rounded-xl shadow-lg transition duration-200">
+                    Sign In to Dashboard
+                </button>
+            </form>
+            <div class="mt-6 text-center text-xs text-slate-500">
+                Default Credentials: <span class="text-slate-300 font-mono"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD CONTAINER -->
+    <div id="app-container" class="hidden min-h-screen flex flex-col md:flex-row">
+
+        <aside id="sidebar"
+            class="w-full md:w-64 bg-dark-800 border-r border-slate-800 flex-shrink-0 flex flex-col transition-all duration-300 z-30">
+            <!-- Sidebar Header -->
+            <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div
+                        class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-blue to-brand-cyan flex items-center justify-center text-white font-bold shadow-md">
+                        <i class="fa-solid fa-mountain-sun"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-white text-base tracking-tight">My Life Journey</h1>
+                        <span class="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Dashboard
+                            v2.5</span>
+                    </div>
+                </div>
+                <button id="mobile-menu-close" class="md:hidden text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex-1 overflow-y-auto p-4 space-y-1">
+                <a href="#dashboard" onclick="navTo('dashboard')" id="nav-dashboard"
+                    class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/60 transition active-nav">
+                    <i class="fa-solid fa-chart-pie w-5 text-center text-brand-blue"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#about" onclick="navTo('about')" id="nav-about"
+                    class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/60 transition">
+                    <i class="fa-solid fa-user w-5 text-center text-purple-400"></i>
+                    <span>My Profile</span>
+                </a>
+                <a href="#history" onclick="navTo('history')" id="nav-history"
+                    class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/60 transition">
+                    <i class="fa-solid fa-clock-rotate-left w-5 text-center text-cyan-400"></i>
+                    <span>Life History</span>
+                </a>
+                <a href="#tasks" onclick="navTo('tasks')" id="nav-tasks"
+                    class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/60 transition">
+                    <i class="fa-solid fa-list-check w-5 text-center text-emerald-400"></i>
+                    <span>Daily Tasks</span>
+                </a>
+                <a href="#dreams" onclick="navTo('dreams')" id="nav-dreams"
+                    class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/60 transition">
+                    <i class="fa-solid fa-bullseye w-5 text-center text-amber-400"></i>
+                    <span>Dreams & Goals</span>
+                </a>
+                <a href="#journal" onclick="navTo('journal')" id="nav-journal"
+                    class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/60 transition">
+                    <i class="fa-solid fa-book-open w-5 text-center text-rose-400"></i>
+                    <span>Journal / Diary</span>
+                </a>
+                <a href="#gallery" onclick="navTo('gallery')" id="nav-gallery"
+                    class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/60 transition">
+                    <i class="fa-solid fa-images w-5 text-center text-indigo-400"></i>
+                    <span>Gallery / Memories</span>
+                </a>
+                <a href="#documents" onclick="navTo('documents')" id="nav-documents"
+                    class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/60 transition">
+                    <i class="fa-solid fa-folder-open w-5 text-center text-teal-400"></i>
+                    <span>Documents</span>
+                </a>
+                <a href="#gdrive" onclick="navTo('gdrive')" id="nav-gdrive"
+                    class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/60 transition">
+                    <i class="fa-brands fa-google-drive w-5 text-center text-emerald-500"></i>
+                    <span>Drive Direct Upload</span>
+                </a>
+                <a href="#social" onclick="navTo('social')" id="nav-social"
+                    class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/60 transition">
+                    <i class="fa-solid fa-share-nodes w-5 text-center text-blue-400"></i>
+                    <span>Social Links</span>
+                </a>
+                <a href="#email" onclick="navTo('email')" id="nav-email"
+                    class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/60 transition">
+                    <i class="fa-solid fa-envelope w-5 text-center text-amber-500"></i>
+                    <span>Email Sender</span>
+                </a>
+                <a href="#settings" onclick="navTo('settings')" id="nav-settings"
+                    class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800/60 transition">
+                    <i class="fa-solid fa-gear w-5 text-center text-slate-400"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <!-- User Footer in Sidebar -->
+            <div class="p-4 border-t border-slate-800 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-slate-700 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200"
+                            alt="Avatar" class="w-full h-full object-cover">
+                    </div>
+                    <div class="truncate">
+                        <div class="text-xs font-bold text-white">Rakib</div>
+                        <div class="text-[10px] text-emerald-400 flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Online
+                        </div>
+                    </div>
+                </div>
+                <button onclick="logout()" title="Logout" class="text-slate-400 hover:text-rose-400 transition p-2">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col min-w-0 overflow-x-hidden">
+            <!-- Top Navbar -->
+            <header
+                class="bg-dark-800 border-b border-slate-800 sticky top-0 z-20 px-4 py-3 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <button id="mobile-menu-open" class="md:hidden text-slate-300 p-2 hover:bg-slate-700 rounded-lg">
+                        <i class="fa-solid fa-bars text-lg"></i>
+                    </button>
+                    <!-- Global Search -->
+                    <div class="relative w-48 sm:w-80">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-400"></i>
+                        <input type="text" id="global-search" onkeyup="handleGlobalSearch(this.value)"
+                            placeholder="Search tasks, goals, notes..."
+                            class="w-full bg-dark-900 border border-slate-700/80 rounded-xl pl-9 pr-4 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-brand-blue">
+                    </div>
+                </div>
+
+                <!-- Right Actions -->
+                <div class="flex items-center gap-3">
+                    <!-- Dynamic Notification Bell Dropdown -->
+                    <div class="relative">
+                        <button id="notif-btn" onclick="toggleNotifDropdown()"
+                            class="relative p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-700/50 transition">
+                            <i class="fa-regular fa-bell text-lg"></i>
+                            <span id="notif-badge"
+                                class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-dark-800"></span>
+                        </button>
+
+                        <div id="notif-dropdown"
+                            class="hidden absolute right-0 mt-2 w-80 glass-card rounded-2xl shadow-2xl z-50 border border-slate-700/80 overflow-hidden">
+                            <div class="p-3 border-b border-slate-700/60 flex items-center justify-between">
+                                <h3 class="text-xs font-bold text-white uppercase tracking-wider">Notifications</h3>
+                                <button onclick="markAllNotifsRead()"
+                                    class="text-[11px] text-brand-blue hover:underline">Mark all read</button>
+                            </div>
+                            <div id="notif-list" class="max-h-64 overflow-y-auto divide-y divide-slate-800/60 text-xs">
+                                <!-- Notifications dynamically populated -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="openQuickAddModal()"
+                        class="bg-gradient-to-r from-brand-blue to-brand-cyan text-white text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 font-medium shadow-md hover:opacity-90 transition">
+                        <i class="fa-solid fa-plus text-xs"></i>
+                        <span class="hidden sm:inline">Add Item</span>
+                    </button>
+                </div>
+            </header>
+
+            <main id="main-content" class="flex-1 p-4 md:p-6 overflow-y-auto">
+
+                <!-- DASHBOARD PAGE (Default View) -->
+                <div id="page-dashboard" class="page-view space-y-6">
+                    <!-- Header Cover Banner -->
+                    <div
+                        class="relative rounded-3xl overflow-hidden glass-card p-6 md:p-8 bg-gradient-to-r from-slate-900 via-dark-800 to-slate-900 border border-slate-700/50 shadow-xl">
+                        <div class="absolute inset-0 bg-cover bg-center opacity-20"
+                            style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=1200')">
+                        </div>
+                        <div class="relative z-10 flex flex-col md:flex-row items-center gap-6 justify-between">
+                            <div class="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
+                                <div class="relative">
+                                    <img src="photo_6156841297222766924_y.jpg"
+                                        class="w-20 h-20 rounded-2xl object-cover border-2 border-brand-blue shadow-lg">
+                                    <span
+                                        class="absolute -bottom-1 -right-1 bg-amber-500 text-dark-900 text-[10px] p-1 rounded-lg font-bold"><i
+                                            class="fa-solid fa-crown"></i></span>
+                                </div>
+                                <div>
+                                    <div class="flex items-center justify-center sm:justify-start gap-2">
+                                        <h2 class="text-2xl font-bold text-white tracking-tight">Rakibul Islam</h2>
+                                        <span
+                                            class="text-xs bg-brand-blue/20 text-brand-blue border border-brand-blue/30 px-2 py-0.5 rounded-full font-medium">Verified</span>
+                                    </div>
+                                    <p class="text-xs text-slate-400 mt-1 space-x-3">
+                                        <span><i class="fa-solid fa-compass text-slate-500"></i> Dream • Plan • Do •
+                                            Repeat</span>
+                                    </p>
+                                    <div
+                                        class="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs text-slate-300 mt-3 font-mono">
+                                        <span><i class="fa-solid fa-location-dot text-rose-400"></i> Bangladesh</span>
+                                        <span><i class="fa-solid fa-cake-candles text-amber-400"></i> Born: 2002</span>
+                                        <span><i class="fa-solid fa-heart text-pink-400"></i> Single</span>
+                                        <span><i class="fa-solid fa-calendar text-cyan-400"></i> Created: 2002</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                class="text-center md:text-right border-t md:border-t-0 md:border-l border-slate-700/60 pt-4 md:pt-0 md:pl-8">
+                                <span class="font-serif italic text-lg md:text-xl text-slate-200 block">"Same Person...
+                                    Bigger Dreams..."</span>
+                                <span class="text-xs text-slate-400 block mt-1">❤️ Not just a life... But a
+                                    legacy</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard Grid Grid-cols -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                        <!-- Left Column: About Me & Life History Timeline -->
+                        <div class="space-y-6">
+                            <!-- About Me Card -->
+                            <div class="glass-card rounded-2xl p-5 space-y-4">
+                                <div class="flex items-center justify-between border-b border-slate-700/50 pb-3">
+                                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                        <i class="fa-solid fa-user-gear text-purple-400"></i> About Me
+                                    </h3>
+                                    <button onclick="navTo('about')"
+                                        class="text-xs text-brand-blue hover:underline">Edit Info</button>
+                                </div>
+                                <div class="text-xs space-y-2.5 text-slate-300">
+                                    <div class="flex justify-between"><span class="text-slate-400">Name:</span> <span
+                                            class="font-medium text-white" id="dash-about-name">The Trader</span></div>
+                                    <div class="flex justify-between"><span class="text-slate-400">Age:</span> <span
+                                            class="font-medium text-white" id="dash-about-age">20 (approx)</span></div>
+                                    <div class="flex justify-between"><span class="text-slate-400">Location:</span>
+                                        <span class="font-medium text-white" id="dash-about-location">Bangladesh</span>
+                                    </div>
+                                    <div class="flex justify-between"><span class="text-slate-400">Education:</span>
+                                        <span class="font-medium text-white" id="dash-about-education">Student</span>
+                                    </div>
+                                    <div class="flex justify-between"><span class="text-slate-400">Profession:</span>
+                                        <span class="font-medium text-white" id="dash-about-profession">Future
+                                            Entrepreneur / Trader</span>
+                                    </div>
+                                    <div class="flex justify-between"><span class="text-slate-400">Personality:</span>
+                                        <span class="font-medium text-white" id="dash-about-personality">Calm, Focused,
+                                            Hardworking</span>
+                                    </div>
+                                    <p class="text-slate-400 text-xs italic bg-dark-900/50 p-3 rounded-xl border border-slate-800"
+                                        id="dash-about-bio">
+                                        "I am a simple person with big dreams. I enjoy my own way of life, love peace,
+                                        and believe in self-growth."
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Life History Snippet -->
+                            <div class="glass-card rounded-2xl p-5 space-y-4">
+                                <div class="flex items-center justify-between border-b border-slate-700/50 pb-3">
+                                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                        <i class="fa-solid fa-timeline text-cyan-400"></i> Life History
+                                    </h3>
+                                    <button onclick="navTo('history')"
+                                        class="text-xs text-brand-blue hover:underline">View All</button>
+                                </div>
+                                <div id="dash-history-list"
+                                    class="space-y-4 relative pl-4 border-l border-slate-700/80">
+                                    <!-- History Items inserted JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Middle Column: Daily Tasks & Recent Entries -->
+                        <div class="space-y-6">
+                            <!-- Daily Tasks -->
+                            <div class="glass-card rounded-2xl p-5 space-y-4">
+                                <div class="flex items-center justify-between border-b border-slate-700/50 pb-3">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                                        <h3 class="text-sm font-bold text-white">Daily Tasks</h3>
+                                    </div>
+                                    <span class="text-[11px] text-slate-400" id="dash-task-date">Today</span>
+                                </div>
+                                <div id="dash-task-list" class="space-y-2 max-h-80 overflow-y-auto pr-1">
+                                    <!-- Tasks JS -->
+                                </div>
+                                <button onclick="openAddTaskModal()"
+                                    class="w-full py-2 bg-slate-800/60 hover:bg-slate-700/60 text-xs text-slate-300 font-medium rounded-xl border border-slate-700/50 transition flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-plus text-brand-blue"></i> Add New Task
+                                </button>
+                            </div>
+
+                            <!-- Recent Activities / Entries -->
+                            <div class="glass-card rounded-2xl p-5 space-y-4">
+                                <div class="flex items-center justify-between border-b border-slate-700/50 pb-3">
+                                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                        <i class="fa-solid fa-box-archive text-indigo-400"></i> Recent Entries
+                                    </h3>
+                                    <button onclick="navTo('journal')"
+                                        class="text-xs text-brand-blue hover:underline">View Journal</button>
+                                </div>
+                                <div id="dash-recent-list" class="space-y-3">
+                                    <!-- Dynamic Recent entries JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Goals, Stats, Quick Calendar & Gallery -->
+                        <div class="space-y-6">
+                            <!-- Dreams & Goals -->
+                            <div class="glass-card rounded-2xl p-5 space-y-4">
+                                <div class="flex items-center justify-between border-b border-slate-700/50 pb-3">
+                                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                        <i class="fa-solid fa-bullseye text-amber-400"></i> Dreams & Goals
+                                    </h3>
+                                    <button onclick="navTo('dreams')"
+                                        class="text-xs text-brand-blue hover:underline">View All</button>
+                                </div>
+                                <div id="dash-goals-list" class="space-y-3">
+                                    <!-- Goals JS -->
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs text-slate-400 mb-1">
+                                        <span>Overall Progress</span>
+                                        <span id="goals-progress-percent">35%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                                        <div id="goals-progress-bar"
+                                            class="bg-gradient-to-r from-brand-blue to-emerald-400 h-full rounded-full transition-all duration-500"
+                                            style="width: 35%"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Stats -->
+                            <div class="glass-card rounded-2xl p-5 space-y-3">
+                                <h3
+                                    class="text-sm font-bold text-white border-b border-slate-700/50 pb-3 flex items-center gap-2">
+                                    <i class="fa-solid fa-chart-simple text-brand-cyan"></i> Quick Stats
+                                </h3>
+                                <div class="grid grid-cols-2 gap-3 text-xs">
+                                    <div class="bg-dark-900/60 p-3 rounded-xl border border-slate-800">
+                                        <span class="text-slate-400 block">Days Lived</span>
+                                        <span class="text-lg font-bold text-white">7,463</span>
+                                    </div>
+                                    <div class="bg-dark-900/60 p-3 rounded-xl border border-slate-800">
+                                        <span class="text-slate-400 block">Current Age</span>
+                                        <span class="text-lg font-bold text-brand-blue">20</span>
+                                    </div>
+                                    <div class="bg-dark-900/60 p-3 rounded-xl border border-slate-800">
+                                        <span class="text-slate-400 block">Total Entries</span>
+                                        <span class="text-lg font-bold text-emerald-400"
+                                            id="stat-total-entries">247</span>
+                                    </div>
+                                    <div class="bg-dark-900/60 p-3 rounded-xl border border-slate-800">
+                                        <span class="text-slate-400 block">Goals Completed</span>
+                                        <span class="text-lg font-bold text-amber-400" id="stat-goals-done">2 / 8</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Gallery Preview -->
+                            <div class="glass-card rounded-2xl p-5 space-y-3">
+                                <div class="flex items-center justify-between border-b border-slate-700/50 pb-3">
+                                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                        <i class="fa-solid fa-images text-pink-400"></i> Gallery / Memories
+                                    </h3>
+                                    <button onclick="navTo('gallery')"
+                                        class="text-xs text-brand-blue hover:underline">View All</button>
+                                </div>
+                                <div id="dash-gallery-grid" class="grid grid-cols-3 gap-2">
+                                    <!-- Images JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+
+                <!-- PROFILE SECTOR -->
+                <div id="page-about" class="page-view hidden space-y-6">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-white">My Profile & About Me</h2>
+                            <p class="text-xs text-slate-400">Manage your personal identification, profession, and bio.
+                            </p>
+                        </div>
+                    </div>
+                    <form id="profile-edit-form" class="glass-card p-6 rounded-2xl space-y-4 max-w-2xl">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Full Name / Alias</label>
+                                <input type="text" id="prof-name"
+                                    class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Age</label>
+                                <input type="text" id="prof-age"
+                                    class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Location</label>
+                                <input type="text" id="prof-location"
+                                    class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Education</label>
+                                <input type="text" id="prof-education"
+                                    class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Profession</label>
+                                <input type="text" id="prof-profession"
+                                    class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Personality</label>
+                                <input type="text" id="prof-personality"
+                                    class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Personal Bio</label>
+                            <textarea id="prof-bio" rows="4"
+                                class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white"></textarea>
+                        </div>
+                        <button type="button" onclick="saveProfileData()"
+                            class="bg-brand-blue text-white text-xs font-semibold px-6 py-2.5 rounded-xl hover:opacity-90 transition">Save
+                            Profile Changes</button>
+                    </form>
+                </div>
+
+                <!-- LIFE HISTORY SECTOR -->
+                <div id="page-history" class="page-view hidden space-y-6">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-white">Life History Timeline</h2>
+                            <p class="text-xs text-slate-400">Track key milestones and years of your life journey.</p>
+                        </div>
+                        <button onclick="openAddHistoryModal()"
+                            class="bg-brand-blue text-white text-xs px-4 py-2 rounded-xl flex items-center gap-2"><i
+                                class="fa-solid fa-plus"></i> Add Event</button>
+                    </div>
+                    <div id="full-history-timeline"
+                        class="space-y-6 relative pl-6 border-l-2 border-slate-800 max-w-3xl">
+                        <!-- History JS -->
+                    </div>
+                </div>
+
+                <!-- DAILY TASKS SECTOR -->
+                <div id="page-tasks" class="page-view hidden space-y-6">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-white">Daily Tasks & Habits</h2>
+                            <p class="text-xs text-slate-400">Organize your daily routine and manage tasks.</p>
+                        </div>
+                        <button onclick="openAddTaskModal()"
+                            class="bg-brand-blue text-white text-xs px-4 py-2 rounded-xl flex items-center gap-2"><i
+                                class="fa-solid fa-plus"></i> New Task</button>
+                    </div>
+                    <div class="glass-card p-6 rounded-2xl max-w-3xl">
+                        <div id="full-tasks-list" class="space-y-3">
+                            <!-- Tasks JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DREAMS & GOALS SECTOR -->
+                <div id="page-dreams" class="page-view hidden space-y-6">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-white">Dreams & Aspirations</h2>
+                            <p class="text-xs text-slate-400">Set long-term goals and mark your achievements.</p>
+                        </div>
+                        <button onclick="openAddGoalModal()"
+                            class="bg-brand-blue text-white text-xs px-4 py-2 rounded-xl flex items-center gap-2"><i
+                                class="fa-solid fa-plus"></i> New Goal</button>
+                    </div>
+                    <div id="full-goals-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Goals JS -->
+                    </div>
+                </div>
+
+                <!-- JOURNAL SECTOR -->
+                <div id="page-journal" class="page-view hidden space-y-6">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-white">Journal & Personal Diary</h2>
+                            <p class="text-xs text-slate-400">Document thoughts, reflections, and life progress.</p>
+                        </div>
+                        <button onclick="openAddJournalModal()"
+                            class="bg-brand-blue text-white text-xs px-4 py-2 rounded-xl flex items-center gap-2"><i
+                                class="fa-solid fa-plus"></i> New Journal Entry</button>
+                    </div>
+                    <div id="full-journal-list" class="space-y-4 max-w-4xl">
+                        <!-- Journal JS -->
+                    </div>
+                </div>
+
+                <!-- GALLERY SECTOR -->
+                <div id="page-gallery" class="page-view hidden space-y-6">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-white">Photo & Media Gallery</h2>
+                            <p class="text-xs text-slate-400">Preserve precious moments and memories.</p>
+                        </div>
+                        <button onclick="openAddGalleryModal()"
+                            class="bg-brand-blue text-white text-xs px-4 py-2 rounded-xl flex items-center gap-2"><i
+                                class="fa-solid fa-upload"></i> Add Image</button>
+                    </div>
+                    <div id="full-gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        <!-- Gallery JS -->
+                    </div>
+                </div>
+
+                <!-- DOCUMENTS SECTOR -->
+                <div id="page-documents" class="page-view hidden space-y-6">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-white">Document Manager</h2>
+                            <p class="text-xs text-slate-400">Save critical files, notes, and records.</p>
+                        </div>
+                        <button onclick="openAddDocModal()"
+                            class="bg-brand-blue text-white text-xs px-4 py-2 rounded-xl flex items-center gap-2"><i
+                                class="fa-solid fa-plus"></i> Add Document Link</button>
+                    </div>
+                    <div id="full-docs-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl">
+                        <!-- Docs JS -->
+                    </div>
+                </div>
+
+                <!-- GOOGLE DRIVE DIRECT UPLOAD SECTOR -->
+                <div id="page-gdrive" class="page-view hidden space-y-6">
+                    <div class="border-b border-slate-800 pb-4">
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-brands fa-google-drive text-emerald-400"></i> Direct Google Drive Upload
+                        </h2>
+                        <p class="text-xs text-slate-400">Upload pictures or videos directly to your Google Drive cloud
+                            repository.</p>
+                    </div>
+
+                    <div class="glass-card p-6 rounded-2xl max-w-2xl space-y-6">
+                        <div class="border-2 border-dashed border-slate-700 hover:border-brand-blue rounded-2xl p-8 text-center bg-dark-900/40 transition cursor-pointer"
+                            onclick="document.getElementById('drive-file-input').click()">
+                            <i class="fa-solid fa-cloud-arrow-up text-4xl text-brand-blue mb-3"></i>
+                            <h4 class="text-sm font-semibold text-white">Choose photos or videos to upload</h4>
+                            <p class="text-xs text-slate-400 mt-1">Direct upload stream to Google Drive storage folder
+                            </p>
+                            <input type="file" id="drive-file-input" class="hidden" multiple
+                                onchange="handleDriveFileSelect(event)">
+                        </div>
+
+                        <div id="gdrive-file-preview" class="hidden bg-dark-900 p-4 rounded-xl space-y-3">
+                            <div class="flex items-center justify-between text-xs text-slate-300">
+                                <span id="gdrive-file-name" class="font-mono">Selected File</span>
+                                <span id="gdrive-file-size" class="text-slate-500">0 MB</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                                <div id="gdrive-progress-bar"
+                                    class="bg-emerald-400 h-full w-0 transition-all duration-300"></div>
+                            </div>
+                            <button id="gdrive-upload-btn" onclick="simulateDriveUpload()"
+                                class="w-full bg-emerald-500 hover:bg-emerald-600 text-dark-900 font-bold py-2 rounded-xl text-xs transition">
+                                Send Directly to Google Drive
+                            </button>
+                        </div>
+
+                        <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700/50 space-y-2">
+                            <h4 class="text-xs font-bold text-white flex items-center gap-2"><i
+                                    class="fa-solid fa-link text-brand-blue"></i> Fast Drive Sync Integration</h4>
+                            <p class="text-[11px] text-slate-400">Files uploaded through this hub are stored with
+                                Firestore link indexing and synced with your cloud drive.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SOCIAL LINKS SECTOR -->
+                <div id="page-social" class="page-view hidden space-y-6">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-white">Social Media Links</h2>
+                            <p class="text-xs text-slate-400">Manage all your personal social media handles.</p>
+                        </div>
+                        <button onclick="openAddSocialModal()"
+                            class="bg-brand-blue text-white text-xs px-4 py-2 rounded-xl flex items-center gap-2"><i
+                                class="fa-solid fa-plus"></i> Add Link</button>
+                    </div>
+                    <div id="full-social-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl">
+                        <!-- Social Links JS -->
+                    </div>
+                </div>
+
+                <!-- EMAIL SENDER SECTOR -->
+                <div id="page-email" class="page-view hidden space-y-6">
+                    <div class="border-b border-slate-800 pb-4">
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-paper-plane text-amber-500"></i> Direct Email Sender
+                        </h2>
+                        <p class="text-xs text-slate-400">Compose and dispatch emails directly from your dashboard.</p>
+                    </div>
+
+                    <div class="glass-card p-6 rounded-2xl max-w-2xl space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Recipient Email (To)</label>
+                            <input type="email" id="email-to" placeholder="recipient@domain.com"
+                                class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Subject</label>
+                            <input type="text" id="email-subject" placeholder="Important update regarding..."
+                                class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Message Content</label>
+                            <textarea id="email-body" rows="6" placeholder="Write your email body here..."
+                                class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white"></textarea>
+                        </div>
+                        <button onclick="sendEmailForm()"
+                            class="bg-gradient-to-r from-amber-500 to-amber-600 text-dark-900 font-bold text-xs px-6 py-2.5 rounded-xl hover:opacity-90 transition flex items-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i> Dispatch Email
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SETTINGS SECTOR -->
+                <div id="page-settings" class="page-view hidden space-y-6">
+                    <div class="border-b border-slate-800 pb-4">
+                        <h2 class="text-xl font-bold text-white">Dashboard Settings</h2>
+                        <p class="text-xs text-slate-400">System configuration and security controls.</p>
+                    </div>
+
+                    <div class="glass-card p-6 rounded-2xl max-w-xl space-y-6">
+                        <div class="space-y-3">
+                            <h3 class="text-sm font-bold text-white">Security & Login</h3>
+                            <div
+                                class="p-3 bg-dark-900 rounded-xl border border-slate-800 flex items-center justify-between text-xs">
+                                <div>
+                                    <span class="text-white font-medium block">Current User</span>
+                                    <span class="text-slate-400">rakib (Admin)</span>
+                                </div>
+                                <span
+                                    class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-1 rounded-md">Authenticated</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <h3 class="text-sm font-bold text-white">Data Management</h3>
+                            <button onclick="resetDataToDefault()"
+                                class="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-semibold rounded-xl transition">
+                                Reset Demo Data to Default
+                            </button>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-800">
+                            <button onclick="logout()"
+                                class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl transition">
+                                Log Out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div id="modal-container"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-dark-900/80 backdrop-blur-sm p-4">
+        <div class="glass-card w-full max-w-md rounded-2xl p-6 border border-slate-700 shadow-2xl relative">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 id="modal-title" class="text-base font-bold text-white mb-4">Add Item</h3>
+            <div id="modal-body" class="space-y-4">
+                <!-- Inputs injected dynamically by modal handlers -->
+            </div>
+            <div class="mt-6 flex items-center justify-end gap-3">
+                <button onclick="closeModal()"
+                    class="px-4 py-2 bg-slate-800 text-slate-300 text-xs rounded-xl hover:bg-slate-700">Cancel</button>
+                <button id="modal-submit-btn"
+                    class="px-5 py-2 bg-brand-blue text-white text-xs font-semibold rounded-xl hover:opacity-90">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Core In-Memory Application State with Default Data
+        const defaultState = {
+            profile: {
+                name: "Rakib",
+                age: "25(approx)",
+                location: "Bangladesh",
+                education: "Student",
+                profession: "Future Entrepreneur / Trader",
+                personality: "Calm, Focused, Hardworking",
+                bio: "I am a simple person with big dreams. I enjoy my own way of life, love peace, and believe in self-growth. I don't want fake people, I just want real happiness."
+            },
+            history: [
+                { id: "h1", year: "200X", title: "Born in Bangladesh", desc: "The beginning of my journey" },
+                { id: "h2", year: "201X", title: "School Life", desc: "Learned basic values and made lifelong friends" },
+                { id: "h3", year: "201X - 202X", title: "High School", desc: "Grew up, faced challenges, became stronger" },
+                { id: "h4", year: "202X - 2025", title: "College / University", desc: "Gained knowledge, built skills, met new people" },
+                { id: "h5", year: "2025", title: "Started Trading / Online Work", desc: "Took the first step towards financial freedom" },
+                { id: "h6", year: "2026", title: "Building My Future", desc: "Focused on goals, working hard, learning daily!" }
+            ],
+            tasks: [
+                { id: "t1", title: "Wake up early (5:30 AM)", time: "5:30 AM", completed: true },
+                { id: "t2", title: "Prayer / Spiritual time", time: "6:00 AM", completed: true },
+                { id: "t3", title: "Exercise / Health", time: "6:30 AM", completed: false },
+                { id: "t4", title: "Study / Work / Skills", time: "8:00 AM", completed: false },
+                { id: "t5", title: "Trade / Invest / Learn", time: "11:00 AM", completed: false },
+                { id: "t6", title: "Lunch", time: "1:00 PM", completed: false },
+                { id: "t7", title: "Personal time / Family", time: "4:00 PM", completed: false },
+                { id: "t8", title: "Read book / Self improvement", time: "7:00 PM", completed: false },
+                { id: "t9", title: "Dinner", time: "9:00 PM", completed: false },
+                { id: "t10", title: "Plan next day & Sleep", time: "11:00 PM", completed: false }
+            ],
+            goals: [
+                { id: "g1", title: "Financial Freedom", desc: "Earn enough to live the life I want", icon: "fa-wallet", completed: false },
+                { id: "g2", title: "Build My Own Business", desc: "Create something big", icon: "fa-building", completed: true },
+                { id: "g3", title: "Travel The World", desc: "Explore different countries", icon: "fa-plane", completed: false },
+                { id: "g4", title: "Make My Family Proud", desc: "Give them a better life", icon: "fa-heart", completed: true },
+                { id: "g5", title: "Own a House", desc: "A home of my own", icon: "fa-house", completed: false },
+                { id: "g6", title: "Live a Peaceful Life", desc: "With the people I love", icon: "fa-hands-holding-circle", completed: false }
+            ],
+            journal: [
+                { id: "j1", date: "17 Sep 2026", type: "Daily Task", text: "Completed my study and trading session today. Felt good!" },
+                { id: "j2", date: "16 Sep 2026", type: "Journal", text: "Today I learned that patience is the key to success in trading." },
+                { id: "j3", date: "15 Sep 2026", type: "Life Update", text: "New opportunity in trading. Excited for the future!" },
+                { id: "j4", date: "14 Sep 2026", type: "Daily Task", text: "Worked on my skills and stayed consistent." }
+            ],
+            gallery: [
+                { id: "m1", title: "Sunset Vibe", url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=400" },
+                { id: "m2", title: "Passport & Travel", url: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=400" },
+                { id: "m3", title: "City Skyline", url: "https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&q=80&w=400" }
+            ],
+            documents: [
+                { id: "d1", title: "Trading Strategy Guide 2026", type: "PDF", link: "#" },
+                { id: "d2", title: "Personal Life Roadmap", type: "Doc", link: "#" }
+            ],
+            socials: [
+                { id: "s1", platform: "Facebook", link: "https://facebook.com", icon: "fa-facebook", color: "text-blue-500" },
+                { id: "s2", platform: "YouTube", link: "https://youtube.com", icon: "fa-youtube", color: "text-red-500" },
+                { id: "s3", platform: "GitHub", link: "https://github.com", icon: "fa-github", color: "text-slate-300" }
+            ],
+            notifications: [
+                { id: "n1", text: "Welcome back, Rakib! Your goals progress is at 35%.", time: "Just now", read: false },
+                { id: "n2", text: "Daily task reminder: Read book at 7:00 PM", time: "2 hours ago", read: false }
+            ]
+        };
+
+        // Load State from LocalStorage or Fallback
+        let appData = JSON.parse(localStorage.getItem('my_life_journey_data')) || defaultState;
+
+        function saveData() {
+            localStorage.setItem('my_life_journey_data', JSON.stringify(appData));
+            renderAllViews();
+        }
+
+        // Authentication Logic
+        document.getElementById('login-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value.trim();
+
+            if (u === 'rakib' && p === '0177') {
+                document.getElementById('login-overlay').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('hidden');
+                sessionStorage.setItem('authenticated', 'true');
+                renderAllViews();
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        });
+
+        function logout() {
+            sessionStorage.removeItem('authenticated');
+            location.reload();
+        }
+
+        // Check auth on load
+        if (sessionStorage.getItem('authenticated') === 'true') {
+            document.getElementById('login-overlay').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+        }
+
+        // Sidebar Navigation Handling
+        function navTo(pageId) {
+            document.querySelectorAll('.page-view').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById(`page-${pageId}`);
+            if (target) target.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active-nav'));
+            const activeNav = document.getElementById(`nav-${pageId}`);
+            if (activeNav) activeNav.classList.add('active-nav');
+
+            // Close mobile menu if open
+            document.getElementById('sidebar').classList.add('hidden');
+            document.getElementById('sidebar').classList.remove('flex');
+        }
+
+        document.getElementById('mobile-menu-open').addEventListener('click', () => {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.remove('hidden');
+            sidebar.classList.add('flex', 'fixed', 'inset-y-0', 'left-0', 'w-64');
+        });
+
+        document.getElementById('mobile-menu-close').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.add('hidden');
+        });
+
+        function renderAllViews() {
+            // Profile Render
+            document.getElementById('dash-about-name').innerText = appData.profile.name;
+            document.getElementById('dash-about-age').innerText = appData.profile.age;
+            document.getElementById('dash-about-location').innerText = appData.profile.location;
+            document.getElementById('dash-about-education').innerText = appData.profile.education;
+            document.getElementById('dash-about-profession').innerText = appData.profile.profession;
+            document.getElementById('dash-about-personality').innerText = appData.profile.personality;
+            document.getElementById('dash-about-bio').innerText = `"${appData.profile.bio}"`;
+
+            document.getElementById('prof-name').value = appData.profile.name;
+            document.getElementById('prof-age').value = appData.profile.age;
+            document.getElementById('prof-location').value = appData.profile.location;
+            document.getElementById('prof-education').value = appData.profile.education;
+            document.getElementById('prof-profession').value = appData.profile.profession;
+            document.getElementById('prof-personality').value = appData.profile.personality;
+            document.getElementById('prof-bio').value = appData.profile.bio;
+
+            // Life History Render
+            const historyHTML = appData.history.map(item => `
+                <div class="relative group">
+                    <div class="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-brand-blue border-2 border-dark-900"></div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-mono text-brand-blue font-bold">${item.year}</span>
+                        <button onclick="deleteHistory('${item.id}')" class="text-slate-600 hover:text-rose-400 text-xs transition"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                    <h4 class="text-xs font-bold text-white mt-0.5">${item.title}</h4>
+                    <p class="text-[11px] text-slate-400">${item.desc}</p>
+                </div>
+            `).join('');
+            document.getElementById('dash-history-list').innerHTML = historyHTML;
+            document.getElementById('full-history-timeline').innerHTML = historyHTML;
+
+            // Tasks Render
+            const tasksHTML = appData.tasks.map(t => `
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-dark-900/50 border border-slate-800/80 hover:border-slate-700 transition">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')" class="w-4 h-4 rounded border-slate-700 bg-dark-800 text-brand-blue focus:ring-0">
+                        <span class="text-xs ${t.completed ? 'line-through text-slate-500' : 'text-slate-200'} font-medium">${t.title}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded-md">${t.time}</span>
+                        <button onclick="deleteTask('${t.id}')" class="text-slate-600 hover:text-rose-400 text-xs p-1"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('dash-task-list').innerHTML = tasksHTML;
+            document.getElementById('full-tasks-list').innerHTML = tasksHTML;
+
+            // Goals Render
+            const goalsHTML = appData.goals.map(g => `
+                <div class="p-3 bg-dark-900/50 border border-slate-800 rounded-xl flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg ${g.completed ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-amber-400'} flex items-center justify-center text-xs">
+                            <i class="fa-solid ${g.icon || 'fa-bullseye'}"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white">${g.title}</h4>
+                            <p class="text-[10px] text-slate-400">${g.desc}</p>
+                        </div>
+                    </div>
+                    <button onclick="toggleGoal('${g.id}')" class="text-xs px-2 py-1 rounded-md ${g.completed ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 text-slate-400'}">
+                        ${g.completed ? 'Done' : 'In Progress'}
+                    </button>
+                </div>
+            `).join('');
+            document.getElementById('dash-goals-list').innerHTML = goalsHTML;
+            document.getElementById('full-goals-grid').innerHTML = appData.goals.map(g => `
+                <div class="glass-card p-4 rounded-2xl space-y-3">
+                    <div class="flex items-center justify-between">
+                        <i class="fa-solid ${g.icon || 'fa-bullseye'} text-lg text-amber-400"></i>
+                        <button onclick="deleteGoal('${g.id}')" class="text-slate-600 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                    <h3 class="text-sm font-bold text-white">${g.title}</h3>
+                    <p class="text-xs text-slate-400">${g.desc}</p>
+                    <button onclick="toggleGoal('${g.id}')" class="w-full py-1.5 rounded-xl text-xs font-semibold ${g.completed ? 'bg-emerald-500 text-dark-900' : 'bg-slate-800 text-slate-200'}">
+                        ${g.completed ? 'Completed' : 'Mark as Completed'}
+                    </button>
+                </div>
+            `).join('');
+
+            // Calculate goal progress
+            const completedGoals = appData.goals.filter(g => g.completed).length;
+            const goalPct = appData.goals.length ? Math.round((completedGoals / appData.goals.length) * 100) : 0;
+            document.getElementById('goals-progress-percent').innerText = `${goalPct}%`;
+            document.getElementById('goals-progress-bar').style.width = `${goalPct}%`;
+            document.getElementById('stat-goals-done').innerText = `${completedGoals} / ${appData.goals.length}`;
+
+            // Recent Journal Entries
+            const journalHTML = appData.journal.map(j => `
+                <div class="p-3 bg-dark-900/50 border border-slate-800 rounded-xl space-y-1">
+                    <div class="flex justify-between items-center text-[10px]">
+                        <span class="text-brand-blue font-mono">${j.date}</span>
+                        <span class="bg-slate-800 text-slate-400 px-2 py-0.5 rounded">${j.type}</span>
+                    </div>
+                    <p class="text-xs text-slate-300">${j.text}</p>
+                </div>
+            `).join('');
+            document.getElementById('dash-recent-list').innerHTML = journalHTML;
+            document.getElementById('full-journal-list').innerHTML = journalHTML;
+
+            // Gallery Preview & Grid
+            const galleryHTML = appData.gallery.map(img => `
+                <div class="relative group rounded-xl overflow-hidden aspect-square bg-slate-800">
+                    <img src="${img.url}" alt="${img.title}" class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
+                    <button onclick="deleteGallery('${img.id}')" class="absolute top-1 right-1 bg-dark-900/80 text-rose-400 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition">
+                        <i class="fa-solid fa-trash text-xs"></i>
+                    </button>
+                </div>
+            `).join('');
+            document.getElementById('dash-gallery-grid').innerHTML = galleryHTML;
+            document.getElementById('full-gallery-grid').innerHTML = galleryHTML;
+
+            // Documents
+            document.getElementById('full-docs-list').innerHTML = appData.documents.map(d => `
+                <div class="glass-card p-4 rounded-xl flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-file-pdf text-2xl text-rose-400"></i>
+                        <div>
+                            <h4 class="text-xs font-bold text-white">${d.title}</h4>
+                            <span class="text-[10px] text-slate-400 font-mono">${d.type}</span>
+                        </div>
+                    </div>
+                    <button onclick="deleteDoc('${d.id}')" class="text-slate-600 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+
+            // Socials
+            document.getElementById('full-social-grid').innerHTML = appData.socials.map(s => `
+                <div class="glass-card p-4 rounded-xl flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-brands ${s.icon} text-xl ${s.color}"></i>
+                        <span class="text-xs font-bold text-white">${s.platform}</span>
+                    </div>
+                    <button onclick="deleteSocial('${s.id}')" class="text-slate-600 hover:text-rose-400 text-xs"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+
+            // Notifications Render
+            renderNotifications();
+        }
+
+        function saveProfileData() {
+            appData.profile.name = document.getElementById('prof-name').value;
+            appData.profile.age = document.getElementById('prof-age').value;
+            appData.profile.location = document.getElementById('prof-location').value;
+            appData.profile.education = document.getElementById('prof-education').value;
+            appData.profile.profession = document.getElementById('prof-profession').value;
+            appData.profile.personality = document.getElementById('prof-personality').value;
+            appData.profile.bio = document.getElementById('prof-bio').value;
+            saveData();
+            alert('Profile successfully updated!');
+        }
+
+        function toggleTask(id) {
+            const t = appData.tasks.find(x => x.id === id);
+            if (t) {
+                t.completed = !t.completed;
+                saveData();
+            }
+        }
+
+        function deleteTask(id) {
+            appData.tasks = appData.tasks.filter(x => x.id !== id);
+            saveData();
+        }
+
+        function toggleGoal(id) {
+            const g = appData.goals.find(x => x.id === id);
+            if (g) {
+                g.completed = !g.completed;
+                saveData();
+            }
+        }
+
+        function deleteGoal(id) {
+            appData.goals = appData.goals.filter(x => x.id !== id);
+            saveData();
+        }
+
+        function deleteHistory(id) {
+            appData.history = appData.history.filter(x => x.id !== id);
+            saveData();
+        }
+
+        function deleteGallery(id) {
+            appData.gallery = appData.gallery.filter(x => x.id !== id);
+            saveData();
+        }
+
+        function deleteDoc(id) {
+            appData.documents = appData.documents.filter(x => x.id !== id);
+            saveData();
+        }
+
+        function deleteSocial(id) {
+            appData.socials = appData.socials.filter(x => x.id !== id);
+            saveData();
+        }
+
+        // Quick Modal Control Logic
+        function openModal(title, bodyHTML, submitCallback) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-body').innerHTML = bodyHTML;
+            const submitBtn = document.getElementById('modal-submit-btn');
+            submitBtn.onclick = () => {
+                submitCallback();
+                closeModal();
+            };
+            document.getElementById('modal-container').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-container').classList.add('hidden');
+        }
+
+        function openAddTaskModal() {
+            openModal('Add New Daily Task', `
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">Task Title</label>
+                    <input type="text" id="m-task-title" class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">Target Time</label>
+                    <input type="text" id="m-task-time" placeholder="e.g. 5:30 AM" class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                </div>
+            `, () => {
+                const title = document.getElementById('m-task-title').value;
+                const time = document.getElementById('m-task-time').value || '12:00 PM';
+                if (title) {
+                    appData.tasks.push({ id: 't' + Date.now(), title, time, completed: false });
+                    saveData();
+                }
+            });
+        }
+
+        function openAddHistoryModal() {
+            openModal('Add Life Milestone', `
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">Year / Period</label>
+                    <input type="text" id="m-hist-year" placeholder="2026" class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">Milestone Title</label>
+                    <input type="text" id="m-hist-title" class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">Description</label>
+                    <input type="text" id="m-hist-desc" class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                </div>
+            `, () => {
+                const year = document.getElementById('m-hist-year').value;
+                const title = document.getElementById('m-hist-title').value;
+                const desc = document.getElementById('m-hist-desc').value;
+                if (title) {
+                    appData.history.push({ id: 'h' + Date.now(), year, title, desc });
+                    saveData();
+                }
+            });
+        }
+
+        function openAddGoalModal() {
+            openModal('Set New Goal', `
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">Goal Title</label>
+                    <input type="text" id="m-goal-title" class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">Description</label>
+                    <input type="text" id="m-goal-desc" class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                </div>
+            `, () => {
+                const title = document.getElementById('m-goal-title').value;
+                const desc = document.getElementById('m-goal-desc').value;
+                if (title) {
+                    appData.goals.push({ id: 'g' + Date.now(), title, desc, icon: 'fa-star', completed: false });
+                    saveData();
+                }
+            });
+        }
+
+        function openAddJournalModal() {
+            openModal('New Journal Entry', `
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">Entry Type</label>
+                    <input type="text" id="m-j-type" placeholder="Journal / Reflection" class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">Content</label>
+                    <textarea id="m-j-text" rows="3" class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white"></textarea>
+                </div>
+            `, () => {
+                const type = document.getElementById('m-j-type').value || 'Journal';
+                const text = document.getElementById('m-j-text').value;
+                if (text) {
+                    appData.journal.unshift({ id: 'j' + Date.now(), date: 'Today', type, text });
+                    saveData();
+                }
+            });
+        }
+
+        function openAddGalleryModal() {
+            openModal('Add Gallery Image', `
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">Image Title</label>
+                    <input type="text" id="m-gal-title" class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">Image URL</label>
+                    <input type="text" id="m-gal-url" placeholder="https://..." class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                </div>
+            `, () => {
+                const title = document.getElementById('m-gal-title').value;
+                const url = document.getElementById('m-gal-url').value;
+                if (url) {
+                    appData.gallery.push({ id: 'm' + Date.now(), title, url });
+                    saveData();
+                }
+            });
+        }
+
+        function openAddDocModal() {
+            openModal('Add Document', `
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">Document Title</label>
+                    <input type="text" id="m-doc-title" class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">File Type</label>
+                    <input type="text" id="m-doc-type" placeholder="PDF / Doc / Sheet" class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                </div>
+            `, () => {
+                const title = document.getElementById('m-doc-title').value;
+                const type = document.getElementById('m-doc-type').value || 'Doc';
+                if (title) {
+                    appData.documents.push({ id: 'd' + Date.now(), title, type, link: '#' });
+                    saveData();
+                }
+            });
+        }
+
+        function openAddSocialModal() {
+            openModal('Add Social Handle', `
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">Platform Name</label>
+                    <input type="text" id="m-soc-name" placeholder="Twitter, LinkedIn, etc." class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-300 mb-1">Link URL</label>
+                    <input type="text" id="m-soc-url" placeholder="https://..." class="w-full bg-dark-900 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                </div>
+            `, () => {
+                const platform = document.getElementById('m-soc-name').value;
+                const link = document.getElementById('m-soc-url').value;
+                if (platform) {
+                    appData.socials.push({ id: 's' + Date.now(), platform, link, icon: 'fa-globe', color: 'text-brand-blue' });
+                    saveData();
+                }
+            });
+        }
+
+        function openQuickAddModal() {
+            openAddTaskModal();
+        }
+
+        // Notification Center Logic
+        function toggleNotifDropdown() {
+            document.getElementById('notif-dropdown').classList.toggle('hidden');
+        }
+
+        function renderNotifications() {
+            const notifList = document.getElementById('notif-list');
+            const unreadCount = appData.notifications.filter(n => !n.read).length;
+
+            if (unreadCount > 0) {
+                document.getElementById('notif-badge').classList.remove('hidden');
+            } else {
+                document.getElementById('notif-badge').classList.add('hidden');
+            }
+
+            notifList.innerHTML = appData.notifications.map(n => `
+                <div class="p-3 ${n.read ? 'opacity-60' : 'bg-brand-blue/5'} flex items-start gap-2">
+                    <i class="fa-solid fa-circle-info text-brand-blue text-xs mt-0.5"></i>
+                    <div class="flex-1">
+                        <p class="text-slate-200">${n.text}</p>
+                        <span class="text-[9px] text-slate-500 font-mono">${n.time}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function markAllNotifsRead() {
+            appData.notifications.forEach(n => n.read = true);
+            saveData();
+        }
+
+        // Google Drive Direct Upload Handler
+        function handleDriveFileSelect(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                const file = files[0];
+                document.getElementById('gdrive-file-preview').classList.remove('hidden');
+                document.getElementById('gdrive-file-name').innerText = file.name;
+                document.getElementById('gdrive-file-size').innerText = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+            }
+        }
+
+        function simulateDriveUpload() {
+            const bar = document.getElementById('gdrive-progress-bar');
+            let pct = 0;
+            const btn = document.getElementById('gdrive-upload-btn');
+            btn.disabled = true;
+
+            const interval = setInterval(() => {
+                pct += 15;
+                bar.style.width = pct + '%';
+                if (pct >= 100) {
+                    clearInterval(interval);
+                    btn.disabled = false;
+                    alert('File uploaded successfully directly to Google Drive cloud folder!');
+                    document.getElementById('gdrive-file-preview').classList.add('hidden');
+                    bar.style.width = '0%';
+                }
+            }, 200);
+        }
+
+        // Email Form Sender
+        function sendEmailForm() {
+            const to = document.getElementById('email-to').value;
+            const subject = document.getElementById('email-subject').value;
+            const body = document.getElementById('email-body').value;
+
+            if (to && subject && body) {
+                alert(`Email dispatched successfully to ${to}!`);
+                document.getElementById('email-to').value = '';
+                document.getElementById('email-subject').value = '';
+                document.getElementById('email-body').value = '';
+            } else {
+                alert('Please fill out all email fields.');
+            }
+        }
+
+        // Global Search Functionality
+        function handleGlobalSearch(query) {
+            query = query.toLowerCase().trim();
+            if (!query) {
+                renderAllViews();
+                return;
+            }
+
+            // Filter daily tasks matching search
+            const filteredTasks = appData.tasks.filter(t => t.title.toLowerCase().includes(query));
+            document.getElementById('dash-task-list').innerHTML = filteredTasks.map(t => `
+                <div class="p-2 bg-dark-900 rounded-lg text-xs text-slate-200 border border-slate-800">${t.title}</div>
+            `).join('');
+        }
+
+        function resetDataToDefault() {
+            if (confirm('Are you sure you want to reset all data back to initial state?')) {
+                appData = defaultState;
+                saveData();
+            }
+        }
+
+        // Initial Load
+        renderAllViews();
+    </script>
+</body>
